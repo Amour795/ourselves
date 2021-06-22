@@ -9,6 +9,30 @@ cloud.init({
   env: cloud.DYNAMIC_CURRENT_ENV
 })
 
+const user = cloud.database().collection('user')
+const lovers = cloud.database().collection('lovers')
+
+
+
+const buildLoversId = async (size = 10) => {
+  let loversId = ''
+  let numArr = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+  let index = 0
+  for (let i = 0; i < size; i++) {
+    index = parseInt(Math.random() * numArr.length);
+    loversId += numArr[index];
+  }
+  let res = await user.where({
+    loversId: loversId
+  }).get()
+
+  if (res.length) {
+    return buildLoversId(size)
+  } else {
+    return loversId
+  }
+}
+
 /**
  * 这个示例将经自动鉴权过的小程序用户 openid 返回给小程序端
  * 
@@ -16,21 +40,67 @@ cloud.init({
  * 
  */
 exports.main = async (event, context) => {
-  console.log(event)
-  console.log(context)
+  const _openId = cloud.getWXContext().OPENID
+  const _userData = event.weRunData.data
 
-  // 可执行其他自定义逻辑
-  // console.log 的内容可以在云开发云函数调用日志查看
-
-  // 获取 WX Context (微信调用上下文)，包括 OPENID、APPID、及 UNIONID（需满足 UNIONID 获取条件）等信息
-  const wxContext = cloud.getWXContext()
-
-  return {
-    event,
-    openid: wxContext.OPENID,
-    appid: wxContext.APPID,
-    unionid: wxContext.UNIONID,
-    env: wxContext.ENV,
+  let userInfo = {
+    avatarUrl: _userData.avatarUrl,
+    nickName: _userData.nickName,
+    _openid: _openId
   }
+
+  const result = await user.where({
+    _openid: _openId
+  }).get()
+
+  if (result.data.length) {
+    let update = {
+      ...userInfo,
+      loversId: result.loversId
+    }
+    await user.where({
+      _openid: _openId
+    }).update({
+      data: {
+        ...update
+      }
+    })
+
+    await lovers.add({
+      data: {
+        _id: loversId,
+        list: [
+          ...update
+        ]
+      }
+    })
+
+    return update
+  } else {
+    let loversId = await buildLoversId()
+    let res = await user.add({
+      data: {
+        ...userInfo,
+        loversId: loversId
+      }
+    })
+
+    let _addUserInfo = {
+      ...userInfo,
+      _id: res._id,
+      loversId: loversId
+    }
+
+    await lovers.add({
+      data: {
+        _id: loversId,
+        list: [
+          _addUserInfo
+        ]
+      }
+    })
+    return _addUserInfo
+  }
+
 }
 
