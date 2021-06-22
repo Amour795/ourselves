@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Taro from '@tarojs/taro'
+import Taro, { Config } from '@tarojs/taro'
 
 import './app.scss'
 
