@@ -41,42 +41,21 @@ const buildLoversId = async (size = 10) => {
  */
 exports.main = async (event, context) => {
   const _openId = cloud.getWXContext().OPENID
-  const _userData = event.weRunData.data
 
-  let userInfo = {
-    avatarUrl: _userData.avatarUrl,
-    nickName: _userData.nickName,
-    _openid: _openId
-  }
 
   const result = await user.where({
     _openid: _openId
   }).get()
 
-  if (result.data.length) {
-    let update = {
-      ...userInfo,
-      loversId: result.loversId
-    }
-    await user.where({
+  if (!result.data.length) {
+    const _userData = event.weRunData.data
+
+    let userInfo = {
+      avatarUrl: _userData.avatarUrl,
+      nickName: _userData.nickName,
       _openid: _openId
-    }).update({
-      data: {
-        ...update
-      }
-    })
+    }
 
-    await lovers.add({
-      data: {
-        _id: loversId,
-        list: [
-          ...update
-        ]
-      }
-    })
-
-    return update
-  } else {
     let loversId = await buildLoversId()
     let res = await user.add({
       data: {
@@ -101,6 +80,6 @@ exports.main = async (event, context) => {
     })
     return _addUserInfo
   }
-
+  return result.data[0]
 }
 

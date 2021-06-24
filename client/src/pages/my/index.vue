@@ -52,12 +52,19 @@ export default {
       other: {
         avatarUrl: '',
         nickName: ''
-      },
+      }
     }
   },
   methods: {
-    async getLogin() {
-      await Taro.getUserProfile({ desc: '用于完善会员资料' })
+    async checkRegister() {
+      const _checkRegister = await Taro.cloud
+        .callFunction({
+          name: "checkRegister",
+        })
+      _checkRegister.result.data.state && this.getLogin(_checkRegister.result.data.state)
+    },
+    async getLogin(isRegister) {
+      !isRegister && await Taro.getUserProfile({ desc: '用于完善会员资料' })
         .then(res => {
           this.userInfo = res.userInfo
           this.cloudID = res.cloudID
@@ -67,7 +74,7 @@ export default {
         .callFunction({
           name: "login",
           data: {
-            weRunData: Taro.cloud.CloudID(this.cloudID),
+            weRunData: this.cloudID && Taro.cloud.CloudID(this.cloudID),
           }
         })
         .then(res => {
@@ -109,7 +116,7 @@ export default {
     }
   },
   onLoad() {
-    // this.getLogin()
+    this.checkRegister()
   }
 }
 </script>
