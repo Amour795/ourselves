@@ -3,7 +3,8 @@ export default {
     "pages/home/index",
     "pages/my/index",
     "pages/bill/index",
-    "pages/clockIn/index"
+    "pages/clockIn/index",
+    "pages/createFestival/index",
   ],
   window: {
     backgroundTextStyle: "light",

@@ -24,9 +24,11 @@ exports.main = async (event, context) => {
     loversId: userInfo.data[0].loversId,
     tips: event.tips,
     isTogether: event.isTogether || false,
+    isCalendar: event.isCalendar|| false,
     type: event.type,
     date: event.date,
     _openId: _openId,
+   
   }
   if (!userInfo.data.length) return {
     code: 200,

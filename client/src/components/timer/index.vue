@@ -19,12 +19,12 @@ export default {
     },
     // positive and negative 
     /**
-     * positive 已经过了多少天 例: 上周一到这周一 距离七天
-     * negative 距离下一次 还有多少天 仅取日期 年份会自动计算
+     * false 已经过了多少天 例: 上周一到这周一 距离七天
+     * true  距离下一次 还有多少天 仅取日期 年份会自动计算
      */
     type: {
-      type: String,
-      default: 'positive'
+      type: Boolean,
+      default: false
     },
     // 是否农历
     calendar: {
@@ -44,26 +44,30 @@ export default {
     }
   },
   created() {
+    this.computing()
     this.init()
   },
   methods: {
     init() {
       setInterval(() => {
-        let _data = this.date instanceof Date ? this.date.replace(/\-/g, '/') : this.date
-        if (this.type === 'positive') {
-          if (this.calendar) {
-            this.dateInfo = this.buildDate(new Date(), this.buildCalendar(_data))
-          } else {
-            this.dateInfo = this.buildDate(new Date(), _data)
-          }
-        } else if (this.type === 'negative') {
-          if (this.calendar) {
-            this.dateInfo = this.buildDate(this.buildCalendar(_data))
-          } else {
-            this.dateInfo = this.buildDate(_data)
-          }
-        }
+        this.computing()
       }, 1000);
+    },
+    computing() {
+      let _data = this.date instanceof Date ? this.date.replace(/\-/g, '/') : this.date
+      if (!this.type) {
+        if (this.calendar) {
+          this.dateInfo = this.buildDate(new Date(), this.buildCalendar(_data))
+        } else {
+          this.dateInfo = this.buildDate(new Date(), _data)
+        }
+      } else {
+        if (this.calendar) {
+          this.dateInfo = this.buildDate(this.buildCalendar(_data))
+        } else {
+          this.dateInfo = this.buildDate(_data)
+        }
+      }
     },
     buildCalendar(date) {
       let _month = Number(new Date(date).getMonth()) + 1

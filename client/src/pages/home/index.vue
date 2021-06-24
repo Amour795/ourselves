@@ -1,33 +1,12 @@
 <template>
   <view class='home'>
-    <AtInput name='value1'
-             type='text'
-             placeholder='标准五个字'
-             :value="saveData.tips"
-             :onChange="(v) => saveData.tips = v" />
-    <AtInput name='value1'
-             type='text'
-             placeholder='标准五个字'
-             :value="saveData.date"
-             :onChange="(v) => saveData.date = v" />
-
-    <AtButton type='primary'
-              :on-click='save'>按钮文案</AtButton>
-
-    <AtButton type='primary'
-              :on-click='vv'>打开AtFloatLayoutisOpened</AtButton>
-    {{isOpened}}
-    <AtFloatLayout :isOpened='isOpened'
-                   :onClose="handleClose">
-      <AtCalendar />
-    </AtFloatLayout>
-
     <view class="card-list">
       <view class="card-list-item"
             v-for="item in list"
-            :key="item">
+            :key="item._id">
         <timer :date='item.date'
-               type='positive'>
+               :type='item.type'
+               :calendar='item.isCalendar'>
           <template slot-scope="row">
             &nbsp;
             <text v-if="row.days || row.hours || row.minutes || row.seconds">
@@ -49,6 +28,7 @@
         </timer>
       </view>
     </view>
+    <button @tap='navigateTo'>213</button>
   </view>
 </template>
 
@@ -56,47 +36,21 @@
 import Taro from '@tarojs/taro'
 import './index.scss'
 import timer from '../../components/timer/index.vue'
-import { AtInput, AtButton, AtCalendar, AtFloatLayout } from 'taro-ui-vue'
 export default {
   name: 'home',
   components: {
-    timer,
-    AtInput,
-    AtButton,
-    AtCalendar,
-    AtFloatLayout
+    timer
   },
   data() {
     return {
-      isOpened: false,
-      list: [],
-      saveData: {
-        isTogether: true,
-        tips: '',
-        _id: '',
-        type: '',
-        date: ''
-      }
+      list: []
     }
   },
   methods: {
-    handleClose(v) {
-      this.isOpened = false
-    },
-    vv() {
-      console.log(123);
-      this.isOpened = !this.isOpened
-    },
-    async save() {
-      await Taro.cloud
-        .callFunction({
-          name: "saveFestival",
-          data: this.saveData
-        })
-        .then(res => {
-          this.userInfo = res.result
-        })
-      this.getList()
+    navigateTo() {
+      Taro.navigateTo({
+        url: '/pages/createFestival/index',
+      })
     },
     async getList() {
       Taro.cloud
@@ -108,7 +62,7 @@ export default {
         })
     }
   },
-  created() {
+  onLoad() {
     this.getList()
   },
 }
